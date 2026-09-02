@@ -12,9 +12,8 @@ from nltk.corpus import stopwords
 from sklearn.model_selection import train_test_split
 from sklearn.svm import LinearSVC
 from sklearn.calibration import CalibratedClassifierCV
-from sklearn.preprocessing import LabelEncoder, OneHotEncoder
+from sklearn.preprocessing import LabelEncoder
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -62,36 +61,34 @@ def load_and_prepare_data():
     df['Tag'] = df['Tag'].replace(TAG_MAPPING_STEP2)
 
     df_train = df[df['Consumer Claim'].notna() & df['Tag'].notna()][
-        ['Consumer Claim', 'Company', 'Tag']
+        ['Consumer Claim', 'Tag']
     ].copy()
-
-    print("Cleaning text...")
-    df_train['Clean_Claim'] = df_train['Consumer Claim'].apply(clean_text)
 
     return df_train
 
 
 def build_pipeline():
-    preprocessor = ColumnTransformer(
-        transformers=[
-            ('text_tfidf', TfidfVectorizer(max_features=5000), 'Clean_Claim'),
-            ('company_ohe', OneHotEncoder(
-                handle_unknown='ignore'), ['Company']),
-        ]
-    )
-    model = CalibratedClassifierCV(
-        LinearSVC(random_state=42, max_iter=2000), cv=5)
-    return Pipeline(steps=[('preprocessor', preprocessor), ('classifier', model)])
+    return Pipeline(steps=[
+        ('tfidf', TfidfVectorizer(
+            max_features=20000,
+            ngram_range=(1, 2),
+            preprocessor=clean_text
+        )),
+        ('classifier', CalibratedClassifierCV(
+            LinearSVC(random_state=42, max_iter=2000), cv=5
+        ))
+    ])
 
 
 def main():
+    print("Loading data...")
     df_train = load_and_prepare_data()
 
     label_encoder = LabelEncoder()
-    df_train['Tag_encoded'] = label_encoder.fit_transform(df_train['Tag'])
+    y = label_encoder.fit_transform(df_train['Tag'])
 
-    X = df_train[['Clean_Claim', 'Company']]
-    y = df_train['Tag_encoded']
+    X = df_train['Consumer Claim']
+
     X_train, _, y_train, _ = train_test_split(
         X, y, test_size=0.2, random_state=42, stratify=y
     )
