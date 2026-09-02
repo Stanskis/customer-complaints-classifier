@@ -31,12 +31,6 @@ jobs:
           mkdir -p data
           gdown 1TuwDjqqqBAmbLA8buObdyjI-bu_BGh7O -O data/dataset.csv
 
-      - name: Cache NLTK data
-        uses: actions/cache@v4
-        with:
-          path: ~/nltk_data
-          key: nltk-stopwords-v1
-
       - name: Run export script
         run: python src/model.py
 
