@@ -18,17 +18,11 @@ DATA_PATH = os.path.join(BASE_DIR, "data", "dataset.csv")
 OUTPUT_PATH = os.path.join(BASE_DIR, "model.pkl")
 
 TAG_MAPPING_STEP1 = {
-    'Credit reporting': 'Credit reporting, credit repair services, or other personal consumer reports',
+    'Credit reporting': 'Credit reporting, other consumer reports',
     'Credit card': 'Credit card or prepaid card',
     'Prepaid card': 'Credit card or prepaid card',
     'Payday loan': 'Payday loan, title loan, or personal loan',
-    'Money transfers': 'Money transfer, virtual currency, or money service',
     'Virtual currency': 'Money transfer, virtual currency, or money service',
-}
-TAG_MAPPING_STEP2 = {
-    'Checking or savings account': 'Bank account or service',
-    'Vehicle loan or lease': 'Consumer Loan',
-    'Payday loan, title loan, or personal loan': 'Consumer Loan',
 }
 
 TOKEN_PATTERN = r'(?u)\b[a-zA-Z]{2,}\b'
@@ -38,7 +32,6 @@ def load_and_prepare_data():
     df = pd.read_csv(DATA_PATH)
     df['Tag'] = df['Tag'].str.strip()
     df['Tag'] = df['Tag'].replace(TAG_MAPPING_STEP1)
-    df['Tag'] = df['Tag'].replace(TAG_MAPPING_STEP2)
 
     df_train = df[df['Consumer Claim'].notna() & df['Tag'].notna()][
         ['Consumer Claim', 'Tag']
