@@ -3,12 +3,8 @@ model.py — Entraîne (ou charge) le modèle final et l'exporte au
 format pickle, pour être attaché comme asset à une release GitHub.
 """
 import os
-import re
-import string
 import pickle
 import pandas as pd
-import nltk
-from nltk.corpus import stopwords
 from sklearn.model_selection import train_test_split
 from sklearn.svm import LinearSVC
 from sklearn.calibration import CalibratedClassifierCV
@@ -35,23 +31,7 @@ TAG_MAPPING_STEP2 = {
     'Payday loan, title loan, or personal loan': 'Consumer Loan',
 }
 
-
-nltk.download('stopwords', quiet=True)
-STOP_WORDS = set(stopwords.words('english'))
-
-
-def clean_text(text):
-    #  1. Convert to lowercase
-    text = text.lower()
-    #  2. Remove digits
-    text = re.sub(r'\d+', '', text)
-    #  3. Remove punctuation
-    text = text.translate(str.maketrans('', '', string.punctuation))
-    #  4. Remove extra whitespace
-    text = re.sub(r'\s+', ' ', text).strip()
-    #  5. Remove stopwords
-    text = ' '.join([word for word in text.split() if word not in STOP_WORDS])
-    return text
+TOKEN_PATTERN = r'(?u)\b[a-zA-Z]{2,}\b'
 
 
 def load_and_prepare_data():
@@ -72,7 +52,9 @@ def build_pipeline():
         ('tfidf', TfidfVectorizer(
             max_features=20000,
             ngram_range=(1, 2),
-            preprocessor=clean_text
+            lowercase=True,
+            token_pattern=TOKEN_PATTERN,
+            stop_words='english'
         )),
         ('classifier', CalibratedClassifierCV(
             LinearSVC(random_state=42, max_iter=2000), cv=5
