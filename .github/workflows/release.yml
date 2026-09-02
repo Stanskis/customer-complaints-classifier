@@ -29,7 +29,7 @@ jobs:
       - name: Download dataset from Google Drive
         run: |
           mkdir -p data
-          gdown --fuzzy 1TuwDjqqqBAmbLA8buObdyjI-bu_BGh7O -O data/dataset.csv
+          gdown 1TuwDjqqqBAmbLA8buObdyjI-bu_BGh7O -O data/dataset.csv
 
       - name: Cache NLTK data
         uses: actions/cache@v4
