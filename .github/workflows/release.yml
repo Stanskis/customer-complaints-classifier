@@ -1,0 +1,46 @@
+﻿name: Export Model on Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  export-model:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Download dataset from Google Drive
+        run: |
+          mkdir -p data
+          gdown --fuzzy 1TuwDjqqqBAmbLA8buObdyjI-bu_BGh7O -O data/dataset.csv
+
+      - name: Cache NLTK data
+        uses: actions/cache@v4
+        with:
+          path: ~/nltk_data
+          key: nltk-stopwords-v1
+
+      - name: Run export script
+        run: python src/model.py
+
+      - name: Upload model as release asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: model.pkl

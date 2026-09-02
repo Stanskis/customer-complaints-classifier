@@ -1,0 +1,14 @@
+model.pkl
+Analyse_exp.ipynb
+.ipynb_checkpoints/
+
+__pycache__/
+*.py[cod]
+*$py.class
+
+venv/
+.venv/
+env/
+
+*.csv
+data/*.csv
